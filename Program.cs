@@ -23,21 +23,25 @@ namespace ChordFingers
         private static void Test()
         {
             var fretsArray = new List<int[]> {
-                //new int[] {1, 0, 2, 1, 3, 1},
-                //new int[] { 0, 3, 2, 0, 1, 0 },
-                //new int[] { 2, 1, 4, 3, 3, 0 },
-                //new int[] { 4, 7, 6, 5, 5, -1 },
-                //new int[] {4, 3, 6, 5, 5, -1 },
-                //new int[] {2, 2, 1, 3, 3, 3},
-                //new int[] {-1, 5, 5, 8, 8, 8},
-                //new int[] {7, 7, 4, 5, 5, -1},
-                //new int[] {12, 11, 11, 12, 13, 13},
+                new int[] {1, 0, 2, 1, 3, 1},
+                new int[] { 0, 3, 2, 0, 1, 0 },
+                new int[] { 2, 1, 4, 3, 3, 0 },
+                new int[] { 4, 7, 6, 5, 5, -1 },
+                new int[] {4, 3, 6, 5, 5, -1 },
+                new int[] {2, 2, 1, 3, 3, 3},
+                new int[] {-1, 5, 5, 8, 8, 8},
+                new int[] {7, 7, 4, 5, 5, -1},
+                new int[] {12, 11, 11, 12, 13, 13},
+                new int[] {1, 0, 0, 3, 3, 0},
                 new int[] {3, 3, 1, 4, 4, -1},
             };
             foreach (var frets in fretsArray)
             {
                 var fingers = FingersCalculator.GetFingers2(frets);
-                Console.WriteLine(string.Join(" ", fingers));
+                if(fingers != null)
+                {
+                    Console.WriteLine(string.Join(" ", fingers));
+                }
             }
         }
 

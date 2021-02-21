@@ -52,26 +52,7 @@ namespace ChordFingers
                 });
             });
 
-            int fingerIndex = 1;
             int maxFret = fretList.Select(f => f.Number).Max();
-            //Simple chord
-            if (neededFingers <= 4)
-            {
-                for (int i = 1; i <= maxFret; i++)
-                {
-                    var currentFrets = fretList.Where(f => f.Number == i).OrderBy(f => f.String).ToList();
-                    foreach (var fret in currentFrets)
-                    {
-                        fingers.Add(new Fret
-                        {
-                            Number = fingerIndex++,
-                            String = fret.String
-                        });
-                    }
-                }
-
-                return fingers.OrderBy(f => f.String).Select(f => f.Number).ToArray();
-            }
 
             //Barred chords
             var possibleBarres = new List<Barre>();
@@ -111,19 +92,36 @@ namespace ChordFingers
             }
 
             int fingersToSave = neededFingers - 4;
-            int needBarres = possibleBarres.Where(b => b.SavedFingers >= fingersToSave).Any() ? 1 : 2;
-            if (needBarres > possibleBarres.Count)
+            var barres = new List<Barre>();
+            //TODO: even if we don't need barres, it can be a good idea to use one (if one is available) to avoid very large step (ex: 1 0 0 3 3 3)
+            if(fingersToSave > 0)
             {
-                Console.WriteLine("Impossible chord: not enough possible barres");
-                return null;
+                int needBarres = possibleBarres.Where(b => b.SavedFingers >= fingersToSave).Any() ? 1 : 2;
+                if (needBarres > possibleBarres.Count)
+                {
+                    Console.WriteLine("Impossible chord: not enough possible barres");
+                    return null;
+                }
+                barres = needBarres == 1 ?
+                    possibleBarres.Where(f => f.SavedFingers >= fingersToSave).OrderByDescending(f => f.GetScore()).Take(needBarres).ToList() :
+                    possibleBarres.OrderByDescending(f => f.GetScore()).Take(needBarres).ToList();
             }
-            var barres = needBarres == 1 ?
-                possibleBarres.Where(f => f.SavedFingers >= fingersToSave).OrderByDescending(f => f.GetScore()).Take(needBarres) :
-                possibleBarres.OrderByDescending(f => f.GetScore()).Take(needBarres);
+
+            int fingerIndex = 1;
+            var remainingFrets = fretList.Where(f => f.Number > 0).ToList();
 
             for (int fretNumber = 1; fretNumber <= maxFret; fretNumber++)
             {
-                var currentFrets = fretList.Where(f => f.Number == fretNumber).OrderBy(f => f.String).ToList();
+                var currentFrets = remainingFrets.Where(f => f.Number == fretNumber).OrderBy(f => f.String).ToList();
+                int savedFingers = barres.Where(b => b.FretNumber >= fretNumber).Select(f => f.SavedFingers).DefaultIfEmpty(0).Sum();
+
+                //Try to use the finger of the fret instead
+                //TODO: if the step between first strings and last strings is too big, use next fingers also (ex: 1 0 0 0 0 2)
+                while (fretNumber > fingerIndex && remainingFrets.Count <= 4 - fingerIndex - savedFingers)
+                {
+                    fingerIndex++;
+                }
+
                 foreach (var fret in currentFrets)
                 {
                     var barre = barres.Where(b => b.FretNumber == fretNumber).FirstOrDefault();
@@ -147,9 +145,10 @@ namespace ChordFingers
                             String = fret.String
                         });
                     }
+                    remainingFrets.Remove(fret);
                 }
             }
-            if(fingers.Where(f => f.Number == 5).Any())
+            if (fingers.Where(f => f.Number == 5).Any())
             {
                 Console.WriteLine("Error!");
             }
