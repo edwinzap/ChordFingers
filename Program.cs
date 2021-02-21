@@ -23,6 +23,7 @@ namespace ChordFingers
         private static void Test()
         {
             var fretsArray = new List<int[]> {
+                new int[] {1, 0, 0, 0, 2, 2},
                 new int[] {1, 0, 2, 1, 3, 1},
                 new int[] { 0, 3, 2, 0, 1, 0 },
                 new int[] { 2, 1, 4, 3, 3, 0 },

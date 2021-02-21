@@ -113,10 +113,26 @@ namespace ChordFingers
             for (int fretNumber = 1; fretNumber <= maxFret; fretNumber++)
             {
                 var currentFrets = remainingFrets.Where(f => f.Number == fretNumber).OrderBy(f => f.String).ToList();
-                int savedFingers = barres.Where(b => b.FretNumber >= fretNumber).Select(f => f.SavedFingers).DefaultIfEmpty(0).Sum();
+                if (!currentFrets.Any())
+                {
+                    continue;
+                }
 
+                int savedFingers = barres.Where(b => b.FretNumber >= fretNumber).Select(f => f.SavedFingers).DefaultIfEmpty(0).Sum();
+                
+                //If the step between first strings and last strings is too big, use the next fingers (ex: 1 0 0 0 0 2)
+                if(fretList.Where(f => f.Number < fretNumber && f.Number > 0).Any())
+                {
+                    int maxPreviousFretNumberString = fretList.Where(f => f.Number < fretNumber && f.Number > 0).Select(f => f.String).Max();
+                    int minCurrentFretNumberString = currentFrets.Select(f => f.String).Min();
+                    int stepWidth = minCurrentFretNumberString - maxPreviousFretNumberString;
+
+                    if (stepWidth > 2 && remainingFrets.Count <= 4 - fingerIndex - savedFingers)
+                    {
+                        fingerIndex++;
+                    }
+                }
                 //Try to use the finger of the fret instead
-                //TODO: if the step between first strings and last strings is too big, use next fingers also (ex: 1 0 0 0 0 2)
                 while (fretNumber > fingerIndex && remainingFrets.Count <= 4 - fingerIndex - savedFingers)
                 {
                     fingerIndex++;
